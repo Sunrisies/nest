@@ -24,7 +24,6 @@ export class UserService {
     private readonly userRepository: Repository<Users>,
     @InjectRepository(Navs)
     private readonly navListRepository: Repository<Navs>,
-
     @Inject(JwtService) private jwtService: JwtService,
   ) {}
 
@@ -141,10 +140,11 @@ export class UserService {
           username: user.username,
         },
       });
+
       res.setHeader('token', token);
       return {
         code: 200,
-        data: user,
+        data: { ...user, token },
         message: '登录成功',
       };
     }

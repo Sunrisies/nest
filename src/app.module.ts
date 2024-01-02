@@ -7,9 +7,25 @@ import { JwtModule } from '@nestjs/jwt';
 
 // import { User } from './user/entities/user.entity';
 import { ArticleModule } from './article/article.module';
+import { createClient } from 'redis';
 
 @Module({
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'REDIS_CLIENT',
+      async useFactory() {
+        const client = createClient({
+          socket: {
+            port: 6379,
+            host: 'localhost',
+          },
+        });
+        await client.connect();
+        return client;
+      },
+    },
+  ],
 
   controllers: [AppController],
   imports: [

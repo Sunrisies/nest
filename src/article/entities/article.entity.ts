@@ -8,11 +8,14 @@ export class Article {
   @Column()
   title: string;
 
-  @Column('text')
+  @Column('longtext')
   content: string;
 
   @Column()
   author: string;
+
+  @Column('longtext')
+  images: string;
 
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -9,18 +17,17 @@ export class ArticleController {
 
   @Post()
   async createArticle(@Body() createArticleDto: CreateArticleDto) {
-    const { title, content } = createArticleDto;
-    return this.articleService.createArticle(title, content);
-  }
-
-  @Get()
-  async getAllArticles() {
-    return this.articleService.getAllArticles();
+    return this.articleService.createArticle(createArticleDto);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.articleService.findOne(+id);
+  }
+
+  @Get()
+  async getAllArticles() {
+    return this.articleService.getAllArticles();
   }
 
   @Patch(':id')

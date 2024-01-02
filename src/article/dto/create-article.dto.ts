@@ -9,6 +9,8 @@ export class CreateArticleDto {
 
   createdAt: Date;
 
+  images: string;
+
   updatedAt: Date;
 
   updatedBy: string;

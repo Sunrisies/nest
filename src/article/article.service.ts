@@ -11,8 +11,15 @@ export class ArticleService {
     @InjectRepository(Article)
     private articleRepository: Repository<Article>,
   ) {}
-  async createArticle(title: string, content: string): Promise<Article> {
-    const article = this.articleRepository.create({ title, content });
+  async createArticle(createArticleDto: CreateArticleDto): Promise<Article> {
+    // console.log(content, 'content');
+    const { title, content, author, images } = createArticleDto;
+    const article = this.articleRepository.create({
+      title,
+      content,
+      author,
+      images,
+    });
     return this.articleRepository.save(article);
   }
 
@@ -20,8 +27,8 @@ export class ArticleService {
     return this.articleRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} article`;
+  async findOne(id: number): Promise<Article> {
+    return await this.articleRepository.find({ where: { id: id } });
   }
 
   update(id: number, updateArticleDto: UpdateArticleDto) {
