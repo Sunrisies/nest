@@ -27,7 +27,7 @@ export class ArticleService {
     return this.articleRepository.find();
   }
 
-  async findOne(id: number): Promise<Article> {
+  async findOne(id: number): Promise<Article[]> {
     return await this.articleRepository.find({ where: { id: id } });
   }
 
@@ -35,7 +35,18 @@ export class ArticleService {
     return `This action updates a #${id} article`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} article`;
+  async remove(id: number) {
+    // 从数据库中删除指定数据，最好是代码
+    const { affected } = await this.articleRepository.delete(id);
+    let message = '';
+    if (affected) {
+      message = '删除成功';
+    } else {
+      message = '没有找到';
+    }
+    return {
+      code: 200,
+      message,
+    };
   }
 }
