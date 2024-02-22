@@ -24,10 +24,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterDto } from './dto/register.dto';
 import { navListDto } from './dto/nav-list.dto';
-
 import { storage } from '../uploads';
 import { Response } from 'express';
 import { LoginGuard } from '../login.guard';
+import { Login } from 'src/types/index';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -45,10 +45,10 @@ export class UserController {
 
   @Post('/login')
   async queryUser(
-    @Body(ValidationPipe) createUserDto: CreateUserDto,
+    @Body(ValidationPipe) LoginDto: Login,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.userService.login(createUserDto, res);
+    return await this.userService.login(LoginDto, res);
   }
 
   @Get()

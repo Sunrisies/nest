@@ -7,33 +7,18 @@ import { JwtModule } from '@nestjs/jwt';
 
 // import { User } from './user/entities/user.entity';
 import { ArticleModule } from './article/article.module';
-import { createClient } from 'redis';
+import { EmailModule } from './email/email.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
-  providers: [
-    AppService,
-    {
-      provide: 'REDIS_CLIENT',
-      async useFactory() {
-        const client = createClient({
-          socket: {
-            port: 6379,
-            host: 'localhost',
-          },
-        });
-        await client.connect();
-        return client;
-      },
-    },
-  ],
-
+  providers: [AppService],
   controllers: [AppController],
   imports: [
     UserModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost', // 服务器地址
-      port: 3306, // 端口号
+      port: 9999, // 端口号
       username: 'root', // 数据库用户名
       password: '123456', // 数据库密码
       database: 'test', // 数据库名
@@ -46,6 +31,8 @@ import { createClient } from 'redis';
       signOptions: { expiresIn: '7d' },
     }),
     ArticleModule,
+    EmailModule,
+    RedisModule,
     // TypeOrmModule.forFeature([User]), // 注册实体类
   ],
 })

@@ -24,7 +24,7 @@ export class Users extends BaseEntity {
   @Column({ type: 'varchar', name: 'phone' })
   phone: string;
 
-  @Column({ type: 'varchar', name: 'email' })
+  @Column({ type: 'varchar', name: 'email', unique: true })
   email: string;
   @CreateDateColumn({
     comment: '创建时间',

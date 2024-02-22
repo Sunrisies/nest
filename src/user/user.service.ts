@@ -1,5 +1,10 @@
-import { Injectable, HttpException, Logger, Inject } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import {
+  Injectable,
+  HttpException,
+  Logger,
+  Inject,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterDto } from './dto/register.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,7 +16,8 @@ import { JwtService } from '@nestjs/jwt';
 import { info } from '../login.guard';
 import { staticFolder } from '../uploads';
 import { navListDto } from './dto/nav-list.dto';
-
+import { Login } from 'src/types/index';
+import { RedisService } from 'src/redis/redis.service';
 function md5(str) {
   const hash = crypto.createHash('md5');
   hash.update(str);
@@ -26,6 +32,8 @@ export class UserService {
     private readonly navListRepository: Repository<Navs>,
     @Inject(JwtService) private jwtService: JwtService,
   ) {}
+  @Inject(RedisService)
+  private redisService: RedisService;
 
   private logger = new Logger();
   async register(RegisterDto: RegisterDto) {
@@ -46,6 +54,12 @@ export class UserService {
     });
     if (foundUser) {
       throw new HttpException('用户已存在', 200);
+    }
+    const foundEmail = await this.userRepository.findOne({
+      where: { email: RegisterDto.email },
+    });
+    if (foundEmail) {
+      throw new HttpException('邮箱已被使用', 200);
     }
     RegisterDto.passWord = md5(RegisterDto.passWord);
     // 删除空值的非必填字段
@@ -112,24 +126,43 @@ export class UserService {
     };
   }
 
-  async login(createLoginDto: CreateUserDto, res) {
+  async login(login: Login, res) {
     // 查询数据库中是否存在当用户
-    const { userName, passWord } = createLoginDto;
-    if (!userName) {
-      return {
-        code: 200,
-        message: '请输入正确的用户名',
-      };
-    }
-    if (!passWord) {
-      return {
-        code: 200,
-        message: '密码不存在',
-      };
-    }
-    const sql = 'SELECT * FROM users WHERE userName = ?';
-    const [user] = await this.userRepository.query(sql, [userName]);
+    let user;
+    const { userName, passWord, type, email, code } = login;
+    if (type === 'email') {
+      const codeInRedis = await this.redisService.get(`captcha_${email}`);
 
+      if (!codeInRedis) {
+        throw new UnauthorizedException('验证码已失效');
+      }
+      if (code !== codeInRedis) {
+        throw new UnauthorizedException('验证码不正确');
+      }
+      const sql = 'SELECT * FROM users WHERE email = ?';
+      console.log(
+        await this.userRepository.findOne({ where: { email } }),
+        '邮箱',
+      );
+
+      user = await this.userRepository.query(sql, [email]);
+    } else {
+      if (!userName) {
+        return {
+          code: 200,
+          message: '请输入正确的用户名',
+        };
+      }
+      if (!passWord) {
+        return {
+          code: 200,
+          message: '密码不存在',
+        };
+      }
+      const sql = 'SELECT * FROM users WHERE userName = ?';
+      user = await this.userRepository.query(sql, [userName]);
+    }
+    console.log(user, 'user21321');
     if (user) {
       if (user.passWord !== md5(passWord)) {
         throw new HttpException('密码错误', 200);
